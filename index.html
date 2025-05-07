@@ -20,6 +20,8 @@
       font-size: 14px;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
   <div id="infoPanel">
@@ -47,7 +49,7 @@
 <h3>가구 정보</h3>
 <div id="furnitureInfo">가구를 클릭해 보세요.</div>
 
-  </div>  <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>  <script>
+  </div>  <script>
     const scene = new THREE.Scene();
     scene.background = new THREE.Color("skyblue");
 
@@ -75,20 +77,43 @@
 
     const furnitureList = [];
 
-    function createFurniture(name, color, size, position) {
-      const geometry = new THREE.BoxGeometry(...size);
-      const material = new THREE.MeshStandardMaterial({ color });
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.set(...position);
-      mesh.name = name;
-      scene.add(mesh);
-      furnitureList.push(mesh);
-    }
+    const loader = new THREE.GLTFLoader();
 
-    createFurniture("침대", 0x87ceeb, [2, 0.5, 1], [0, 0.25, 0]);
-    createFurniture("책상", 0xffcc99, [1.5, 0.75, 0.75], [-3, 0.375, -2]);
-    createFurniture("소파", 0xcccccc, [2, 0.6, 1], [2.5, 0.3, 1]);
-    createFurniture("선반", 0x996633, [0.5, 1.5, 0.3], [-2, 0.75, 2]);
+    loader.load('Bed.glb', function (gltf) {
+      const bed = gltf.scene;
+      bed.scale.set(1.5, 1.5, 1.5);
+      bed.position.set(0, 0, 0);
+      bed.name = "침대";
+      scene.add(bed);
+      furnitureList.push(bed);
+    });
+
+    loader.load('Sofa.glb', function (gltf) {
+      const sofa = gltf.scene;
+      sofa.scale.set(1.5, 1.5, 1.5);
+      sofa.position.set(2, 0, 1);
+      sofa.name = "소파";
+      scene.add(sofa);
+      furnitureList.push(sofa);
+    });
+
+    loader.load('Desk.glb', function (gltf) {
+      const desk = gltf.scene;
+      desk.scale.set(1.2, 1.2, 1.2);
+      desk.position.set(-3, 0, -2);
+      desk.name = "책상";
+      scene.add(desk);
+      furnitureList.push(desk);
+    });
+
+    loader.load('Kitchen.glb', function (gltf) {
+      const kitchen = gltf.scene;
+      kitchen.scale.set(2, 2, 2);
+      kitchen.position.set(0, 0, -4);
+      kitchen.name = "주방";
+      scene.add(kitchen);
+      furnitureList.push(kitchen);
+    });
 
     camera.position.set(5, 5, 5);
     camera.lookAt(0, 0, 0);
@@ -116,7 +141,7 @@
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(furnitureList);
+      const intersects = raycaster.intersectObjects(furnitureList, true);
       if (intersects.length > 0) {
         selectedObject = intersects[0].object;
         isDragging = true;
@@ -137,7 +162,7 @@
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(furnitureList);
+      const intersects = raycaster.intersectObjects(furnitureList, true);
       if (intersects.length > 0) {
         const clicked = intersects[0].object;
         let info = `<strong>${clicked.name}</strong><br>`;
@@ -147,8 +172,8 @@
           info += `- L자형 책상 (리뷰 980개)<br>- 접이식 테이블 (가성비 추천)`;
         } else if (clicked.name === "소파") {
           info += `- 3인용 패브릭 소파<br>- 모던 레더 소파 (후기 4.7)`;
-        } else if (clicked.name === "선반") {
-          info += `- 원목 3단 선반<br>- 화이트 철제 선반 (실용성 우수)`;
+        } else if (clicked.name === "주방") {
+          info += `- 싱크대 + 냉장고 구성<br>- 우드톤 주방세트 (신혼 인기)`;
         }
         document.getElementById('furnitureInfo').innerHTML = info;
       }
