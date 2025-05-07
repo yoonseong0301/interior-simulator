@@ -6,82 +6,118 @@
     body { margin: 0; overflow: hidden; display: flex; }
     canvas { display: block; }
     #infoPanel {
-      width: 250px;
+      width: 300px;
       background-color: #f0f0f0;
       padding: 10px;
       font-family: sans-serif;
+      overflow-y: auto;
+    }
+    #inputForm input, #inputForm select, #inputForm button {
+      display: block;
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 5px;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
   <div id="infoPanel">
-    <h3>가구 정보</h3>
-    <div id="furnitureInfo">가구를 클릭해 보세요.</div>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
-  <script>
+    <h3>사용자 입력</h3>
+    <form id="inputForm">
+      <label>방 크기 (㎡)</label>
+      <input type="number" id="roomSize" value="20"><label>방 용도</label>
+  <select id="roomPurpose">
+    <option value="침실">침실</option>
+    <option value="거실">거실</option>
+    <option value="공부방">공부방</option>
+  </select>
+
+  <label>인테리어 스타일</label>
+  <select id="roomStyle">
+    <option value="미니멀">미니멀</option>
+    <option value="우드">우드</option>
+    <option value="모던">모던</option>
+    <option value="빈티지">빈티지</option>
+  </select>
+
+  <button type="button" onclick="handleUserInput()">적용하기</button>
+</form>
+
+<h3>가구 정보</h3>
+<div id="furnitureInfo">가구를 클릭해 보세요.</div>
+
+  </div>  <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>  <script>
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 250) / window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth - 250, window.innerHeight);
-    document.body.appendChild(renderer.domElement);const floorGeometry = new THREE.PlaneGeometry(10, 10);
-const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
-const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-floor.rotation.x = -Math.PI / 2;
-scene.add(floor);
+    renderer.setSize(window.innerWidth - 300, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(5, 10, 7);
-scene.add(light);
+    const floorGeometry = new THREE.PlaneGeometry(10, 10);
+    const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.rotation.x = -Math.PI / 2;
+    scene.add(floor);
 
-function createFurniture(name, color, size, position) {
-  const geometry = new THREE.BoxGeometry(...size);
-  const material = new THREE.MeshStandardMaterial({ color });
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.set(...position);
-  mesh.name = name;
-  scene.add(mesh);
-}
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 10, 7);
+    scene.add(light);
 
-// 가구 추가: 침대, 책상, 소파, 선반
-createFurniture("침대", 0x87ceeb, [2, 0.5, 1], [0, 0.25, 0]);
-createFurniture("책상", 0xffcc99, [1.5, 0.75, 0.75], [-3, 0.375, -2]);
-createFurniture("소파", 0xcccccc, [2, 0.6, 1], [2.5, 0.3, 1]);
-createFurniture("선반", 0x996633, [0.5, 1.5, 0.3], [-2, 0.75, 2]);
-
-camera.position.set(5, 5, 5);
-camera.lookAt(0, 0, 0);
-
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-
-window.addEventListener('click', (event) => {
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObjects(scene.children);
-  if (intersects.length > 0) {
-    const clicked = intersects[0].object;
-    let info = `<strong>${clicked.name}</strong><br>`;
-    if (clicked.name === "침대") {
-      info += `- 메모리폼 침대 (구매수 1,203건)<br>- 원목 프레임 (후기 4.8/5)`;
-    } else if (clicked.name === "책상") {
-      info += `- L자형 책상 (리뷰 980개)<br>- 접이식 테이블 (가성비 추천)`;
-    } else if (clicked.name === "소파") {
-      info += `- 3인용 패브릭 소파<br>- 모던 레더 소파 (후기 4.7)`;
-    } else if (clicked.name === "선반") {
-      info += `- 원목 3단 선반<br>- 화이트 철제 선반 (실용성 우수)`;
+    function createFurniture(name, color, size, position) {
+      const geometry = new THREE.BoxGeometry(...size);
+      const material = new THREE.MeshStandardMaterial({ color });
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(...position);
+      mesh.name = name;
+      scene.add(mesh);
     }
-    document.getElementById('furnitureInfo').innerHTML = info;
-  }
-});
 
-function animate() {
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-}
-animate();
+    // 기본 가구 추가
+    createFurniture("침대", 0x87ceeb, [2, 0.5, 1], [0, 0.25, 0]);
+    createFurniture("책상", 0xffcc99, [1.5, 0.75, 0.75], [-3, 0.375, -2]);
+    createFurniture("소파", 0xcccccc, [2, 0.6, 1], [2.5, 0.3, 1]);
+    createFurniture("선반", 0x996633, [0.5, 1.5, 0.3], [-2, 0.75, 2]);
 
-  </script>
-</body>
+    camera.position.set(5, 5, 5);
+    camera.lookAt(0, 0, 0);
+
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    window.addEventListener('click', (event) => {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children);
+      if (intersects.length > 0) {
+        const clicked = intersects[0].object;
+        let info = `<strong>${clicked.name}</strong><br>`;
+        if (clicked.name === "침대") {
+          info += `- 메모리폼 침대 (구매수 1,203건)<br>- 원목 프레임 (후기 4.8/5)`;
+        } else if (clicked.name === "책상") {
+          info += `- L자형 책상 (리뷰 980개)<br>- 접이식 테이블 (가성비 추천)`;
+        } else if (clicked.name === "소파") {
+          info += `- 3인용 패브릭 소파<br>- 모던 레더 소파 (후기 4.7)`;
+        } else if (clicked.name === "선반") {
+          info += `- 원목 3단 선반<br>- 화이트 철제 선반 (실용성 우수)`;
+        }
+        document.getElementById('furnitureInfo').innerHTML = info;
+      }
+    });
+
+    function handleUserInput() {
+      const size = document.getElementById("roomSize").value;
+      const purpose = document.getElementById("roomPurpose").value;
+      const style = document.getElementById("roomStyle").value;
+      alert(`방 크기: ${size}㎡\n방 용도: ${purpose}\n스타일: ${style}`);
+      // 추후: 이 값들을 기반으로 추천 알고리즘, 배치 변경 등 적용 가능
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script></body>
 </html>
